@@ -1,0 +1,178 @@
+<main
+  class="min-h-screen bg-gradient-to-br from-[#051f45] to-[#102a50] p-12 font-sans text-white/90"
+>
+  <div class="max-w-6xl mx-auto space-y-16">
+    <header class="border-b-2 border-white/10 mb-16 pb-6 flex justify-between items-end">
+      <h1 class="text-5xl font-extrabold tracking-tighter text-white">Invoice App</h1>
+      <nav class="flex gap-4">
+        <button
+          (click)="createSection.scrollIntoView({ behavior: 'smooth', block: 'start' })"
+          class="bg-white/10 border border-white/20 px-6 py-2.5 rounded-full font-bold backdrop-blur-md hover:bg-white/20 transition-all"
+        >
+          Create Invoice
+        </button>
+        <input
+          #fileInput
+          type="file"
+          (change)="onFileSelected($event)"
+          style="display: none"
+          accept=".csv"
+        />
+        <button
+          (click)="fileInput.click()"
+          class="bg-white/10 border border-white/20 px-6 py-2.5 rounded-full font-bold backdrop-blur-md text-[#f2c4cd] hover:text-white transition-all"
+        >
+          Import CSV
+        </button>
+      </nav>
+    </header>
+
+    <div class="mb-16 bg-white/5 p-6 rounded-2xl border border-white/10 shadow-inner">
+      <label class="block mb-3 font-bold text-xs tracking-widest text-white/70">Search</label>
+      <div class="relative flex items-center">
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="search()"
+          placeholder="Filter by name or company"
+          class="w-full bg-white/5 p-5 pr-32 rounded-xl text-xl outline-none border border-white/10 focus:border-[#f2c4cd] focus:ring-1 focus:ring-[#f2c4cd] transition-all placeholder:text-gray-500"
+        />
+        <button
+          (click)="search()"
+          class="absolute right-2 bg-[#f2c4cd] text-[#051f45] px-6 py-2.5 rounded-lg font-black uppercase text-sm hover:bg-white transition-all shadow-lg"
+        >
+          Search
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
+      <div
+        *ngFor="let client of clients"
+        class="bg-white/5 backdrop-blur-lg p-10 rounded-2xl shadow-xl border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all flex flex-col justify-between"
+      >
+        <div>
+          <h2 class="text-2xl font-extrabold mb-5 text-white tracking-tight">
+            {{ client.name }}
+          </h2>
+          <div class="space-y-3 text-sm text-white/70">
+            <p><span class="font-bold text-white">Company:</span> {{ client.company }}</p>
+            <p><span class="font-bold text-white">Email:</span> {{ client.email }}</p>
+            <p><span class="font-bold text-white">Address:</span> {{ client.address }}</p>
+          </div>
+          <button
+            (click)="newInvoice.clientId = client.id"
+            class="mt-10 w-full bg-[#f2c4cd] text-[#051f45] p-3.5 rounded-xl font-bold border border-white/10 hover:bg-white hover:text-[#051f45] transition-all shadow-xl shadow-[#f2c4cd]/10"
+          >
+            Select Client
+          </button>
+        </div>
+      </div>
+      <div
+        *ngIf="clients.length == 0"
+        class="col-span-full border-4 border-dashed border-white/10 p-24 rounded-3xl text-center bg-white/5"
+      >
+        <p class="font-bold animate-pulse text-white/50 tracking-widest">
+          No matching clients found
+        </p>
+      </div>
+    </div>
+
+    <section
+      #createSection
+      class="mb-20 bg-white/5 p-10 rounded-2xl shadow-2xl border border-white/10"
+    >
+      <h2 class="text-3xl font-bold mb-10 text-white py-1.5 rounded-lg inline-block">
+        Create Invoice
+      </h2>
+      <div class="space-y-6">
+        <div>
+          <label class="block font-bold text-xs mb-1.5 tracking-wider text-white/70"
+            >Client ID:</label
+          >
+          <input
+            [(ngModel)]="newInvoice.clientId"
+            class="w-full rounded-lg p-3 bg-white/5 text-white font-mono"
+            readonly
+          />
+          <p *ngIf="clientError" class="text-red-600 text-[10px] font-bold mt-2 tracking-widest">
+            {{ msg }}
+          </p>
+        </div>
+
+        <div
+          *ngFor="let item of newInvoice.items; let i = index"
+          class="grid grid-cols-1 md:grid-cols-12 gap-4 p-5 border-2 border-dashed border-white/10 rounded-xl bg-white/5 items-end"
+        >
+          <div class="md:col-span-6 flex flex-col">
+            <label class="text-[10px] font-bold text-white/40 mb-1">Description</label>
+            <input
+              [(ngModel)]="item.description"
+              placeholder="Item Description"
+              class="bg-transparent text-white border-b border-white/20 focus:border-[#f2c4cd] p-2 outline-none w-full"
+            />
+          </div>
+
+          <div class="md:col-span-3 flex flex-col">
+            <label class="text-[10px] font-bold text-white/40 mb-1">Quantity</label>
+            <input
+              [(ngModel)]="item.quantity"
+              type="number"
+              class="bg-transparent text-white border-b border-white/20 focus:border-[#f2c4cd] p-2 outline-none w-full"
+            />
+          </div>
+
+          <div class="md:col-span-3 flex flex-col">
+            <label class="text-[10px] font-bold text-white/40 mb-1">Price</label>
+            <input
+              [(ngModel)]="item.unitPrice"
+              type="number"
+              class="bg-transparent text-white border-b border-white/20 focus:border-[#f2c4cd] p-2 outline-none w-full"
+            />
+          </div>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button
+            (click)="addItem()"
+            class="bg-white/10 border border-white/10 px-8 py-3 rounded-full font-extrabold hover:bg-white/20 text-white"
+          >
+            Add Item
+          </button>
+          <button
+            (click)="saveInvoice()"
+            class="flex-grow bg-[#f2c4cd] text-[#051f45] p-3.5 rounded-full font-extrabold hover:bg-white hover:text-[#051f45] transition-all shadow-xl shadow-[#f2c4cd]/10"
+          >
+            Submit Invoice
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold mb-8 text-white tracking-tight">Existing Invoices</h2>
+      <div
+        *ngFor="let invoice of invoices"
+        class="bg-white/5 p-8 mb-8 rounded-2xl shadow-xl border border-white/10 hover:scale-[1.01] hover:border-white/20 transition-all"
+      >
+        <div
+          class="flex justify-between items-center font-bold border-b-2 border-white/10 mb-6 pb-3"
+        >
+          <span class="text-xl font-bold tracking-tight"
+            >Invoice #{{ invoice.id }} // {{ invoice.client?.name }}</span
+          >
+          <span
+            class="bg-[#f2c4cd] text-[#051f45] px-4 py-1.5 text-lg font-extrabold tracking-tight rounded-md shadow-inner shadow-[#051f45]/20"
+            >Total: ${{ invoice.total }}</span
+          >
+        </div>
+        <div
+          *ngFor="let item of invoice.invoiceItems"
+          class="text-sm border-l-4 border-[#f2c4cd] pl-5 mb-3 text-white/70"
+        >
+          {{ item.quantity }} x {{ item.description }} @ ${{ item.unitPrice }}
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
